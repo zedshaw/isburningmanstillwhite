@@ -17,6 +17,8 @@ g = 0
 b = 0
 n_faces = 0
 
+gray_mean = 0
+
 for image in args.imgs:
   color = opencv.imread(image)
   color_rgb = opencv.cvtColor(color, opencv.COLOR_BGR2RGB)
@@ -35,6 +37,8 @@ for image in args.imgs:
 
     # Image.fromarray(gray_face).save("{}/{}".format("small-gray",image.rsplit("/",1)[1]))
     # Image.fromarray(color_face).save("{}/{}".format("small-color",image.rsplit("/",1)[1]))
+
+    gray_mean = gray_mean + opencv.mean(gray_face)[0]
 
 
     ## organize the data for kmeans
@@ -86,3 +90,6 @@ b = b/n_faces
 
 print("<div style='background-color: rgb({}, {}, {})'><p>Average color</p></div>".format(int(r),int(g),int(b)))
 
+gray_mean = int(gray_mean/n_faces)
+
+print "<div style='background-color: rgb({},{},{}); color: #ff000'><p>Mean grayscale value: {}</p></div>".format(gray_mean,gray_mean,gray_mean,gray_mean)
