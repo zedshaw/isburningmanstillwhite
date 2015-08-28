@@ -2,6 +2,8 @@
 
 Checks to see if the Burning Man board of directors is still mostly white.
 
+# Artists' Statement
+
 This is an art project by Zed A. Shaw and Greg Borenstein, who are both artists
 so you can't criticize this project because then you'd be showing how much you
 hate art.
