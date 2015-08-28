@@ -1,14 +1,11 @@
-import argparse
 import cv2 as opencv
 from PIL import Image
 import numpy as np
 import colorsys
 import math
+import sys
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("imgs", help="Path to the image(s) in which to find faces.", nargs="+")
-parser.add_argument("--output", help="Path to json output.", default="STDOUT")
-args = parser.parse_args()
+imgs = sys.argv[1:]
 
 face_cascade = opencv.CascadeClassifier("haarcascade_frontalface_alt.xml")
 
@@ -19,18 +16,13 @@ n_faces = 0
 
 gray_mean = 0
 
-for image in args.imgs:
+for image in imgs:
   color = opencv.imread(image)
   color_rgb = opencv.cvtColor(color, opencv.COLOR_BGR2RGB)
   gray = opencv.cvtColor(color, opencv.COLOR_BGR2GRAY)
   faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-
-
   for(x,y,w,h) in faces:
-    
-    
-
     opencv.cvtColor(color, opencv.COLOR_BGR2HSV, color)
     gray_face = gray[y:(y+h), x:(x+w)]
     color_face = color[y:(y+h), x:(x+w)]
@@ -38,8 +30,8 @@ for image in args.imgs:
     # Image.fromarray(gray_face).save("{}/{}".format("small-gray",image.rsplit("/",1)[1]))
     # Image.fromarray(color_face).save("{}/{}".format("small-color",image.rsplit("/",1)[1]))
 
-    gray_mean = gray_mean + opencv.mean(gray_face)[0]
-
+    face_mean = opencv.mean(gray_face)[0]
+    gray_mean += face_mean
 
     ## organize the data for kmeans
     hsv = opencv.split(color_face)
@@ -67,13 +59,11 @@ for image in args.imgs:
 
     color = sortedColors[0]
 
-
-
     # for (i,color) in enumerate(sortedColors):
-      # note: OpenCV uses a hue range of 0-180
-    rgb = colorsys.hsv_to_rgb(color['center'][0]/180., color['center'][1]/255., color['center'][2]/255.)
+    # note: OpenCV uses a hue range of 0-180
+    rgb = colorsys.hsv_to_rgb(color['center'][0]/180.0,
+                              color['center'][1]/255.0, color['center'][2]/255.0)
     rgb = [x * 256 for x in rgb]
-
 
     n_faces = n_faces + 1
     r = r + rgb[0]
@@ -81,15 +71,26 @@ for image in args.imgs:
     b = b + rgb[2]
 
 
-    print("<div style='background-color: rgb({}, {}, {})'><img src='small-color/{}' /></div>".format(int(np.round(rgb[0])),int(np.round(rgb[1])), int(np.round(rgb[2])), image.rsplit("/",1)[1]))
+r = int(r/n_faces)
+g = int(g/n_faces)
+b = int(b/n_faces)
+gray_mean = gray_mean / n_faces
 
+rgb_color = "rgb({r},{g},{b})".format(r=r, g=g, b=b)
+answer = 'YES'  # constant because, like this is ever going to change
 
-r = r/n_faces
-g = g/n_faces
-b = b/n_faces
+TEMPLATE = """
+<html>
+<head>
+<title>Is Burning Man Still White?</title>
+</head>
 
-print("<div style='background-color: rgb({}, {}, {})'><p>Average color</p></div>".format(int(r),int(g),int(b)))
+<body style="background-color: {color}">
+<h1>{answer}</h1>
+</body>
+</html>
+""".format(color=rgb_color, answer=answer)
 
-gray_mean = int(gray_mean/n_faces)
+output = open("index.html", 'w')
+output.write(TEMPLATE)
 
-print "<div style='background-color: rgb({},{},{}); color: #ff000'><p>Mean grayscale value: {}</p></div>".format(gray_mean,gray_mean,gray_mean,gray_mean)
