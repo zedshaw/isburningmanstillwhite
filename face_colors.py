@@ -88,7 +88,7 @@ TEMPLATE = """
 <body style="background-color: {color}">
 <center>
 <h1 style="font-size: 20em">{answer}</h1>
-
+<p>The current average board member skin color is: {color}.</p>
 <p><a href="http://burningman.org/network/about-us/people/board-of-directors/">See for yourself.</a></p>
 <p><a href="https://github.com/zedshaw/isburningmanstillwhite">Fork us on github.</a></p>
 </center>
